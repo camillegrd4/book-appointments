@@ -1,5 +1,6 @@
 package com.maiia.pro.service;
 
+import com.maiia.pro.dto.AvailabilityDto;
 import com.maiia.pro.entity.Appointment;
 import com.maiia.pro.entity.Availability;
 import com.maiia.pro.entity.TimeSlot;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProAvailabilityService {
@@ -27,8 +29,15 @@ public class ProAvailabilityService {
 		this.timeSlotRepository = timeSlotRepository;
 	}
 
-	public List<Availability> findByPractitionerId(Integer practitionerId) {
-		return availabilityRepository.findByPractitionerId(practitionerId);
+	public List<AvailabilityDto> findByPractitionerId(Integer practitionerId) {
+		return availabilityRepository.findByPractitionerId(practitionerId)
+		                             .stream()
+		                             .map(availability -> AvailabilityDto.builder()
+		                                                                 .practitionerId(availability.getPractitionerId())
+		                                                                 .endDate(availability.getEndDate())
+		                                                                 .startDate(availability.getStartDate())
+		                                                                 .build())
+		                             .collect(Collectors.toList());
 	}
 
 	public List<Availability> generateAvailabilities(Integer practitionerId) {
@@ -50,6 +59,15 @@ public class ProAvailabilityService {
 			}
 		}
 		return availabilities;
+	}
+
+	public Availability save(AvailabilityDto availabilityDto) {
+		Availability availability = Availability.builder()
+		                                        .practitionerId(availabilityDto.getPractitionerId())
+		                                        .startDate(availabilityDto.getStartDate())
+		                                        .endDate(availabilityDto.getEndDate())
+		                                        .build();
+		return availabilityRepository.save(availability);
 	}
 
 	private static LocalDateTime getNextSlotStart(List<Appointment> appointments, LocalDateTime slotStart, LocalDateTime slotEnd) {

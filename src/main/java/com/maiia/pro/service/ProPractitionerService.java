@@ -19,4 +19,8 @@ public class ProPractitionerService {
     public List<Practitioner> findAll() {
         return practitionerRepository.findAll();
     }
+
+    public boolean existsById(Integer practitionerId) {
+        return practitionerRepository.existsById(practitionerId);
+    }
 }

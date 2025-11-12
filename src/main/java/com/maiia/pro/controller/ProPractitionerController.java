@@ -3,7 +3,6 @@ package com.maiia.pro.controller;
 import com.maiia.pro.entity.Practitioner;
 import com.maiia.pro.service.ProPractitionerService;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,10 +15,13 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/practitioners", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ProPractitionerController {
-    @Autowired
-    private ProPractitionerService proPractitionerService;
+    private final ProPractitionerService proPractitionerService;
 
-    @ApiOperation(value = "Get practitioners")
+	public ProPractitionerController(ProPractitionerService proPractitionerService) {
+		this.proPractitionerService = proPractitionerService;
+	}
+
+	@ApiOperation(value = "Get practitioners")
     @GetMapping
     public List<Practitioner> getPractitioners() {
         return proPractitionerService.findAll();

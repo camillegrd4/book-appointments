@@ -9,7 +9,6 @@ import com.maiia.pro.repository.TimeSlotRepository;
 import com.maiia.pro.service.ProAvailabilityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,18 +21,19 @@ import java.util.List;
 public class CommandLineStartupRunner implements CommandLineRunner {
 
     private final Logger log = LoggerFactory.getLogger(CommandLineStartupRunner.class);
+    private final PatientRepository patientRepository;
+    private final PractitionerRepository practitionerRepository;
+    private final TimeSlotRepository timeSlotRepository;
+    private final ProAvailabilityService proAvailabilityService;
 
-    @Autowired
-    private PatientRepository patientRepository;
-    @Autowired
-    private PractitionerRepository practitionerRepository;
-    @Autowired
-    private TimeSlotRepository timeSlotRepository;
+	public CommandLineStartupRunner(PatientRepository patientRepository, PractitionerRepository practitionerRepository, TimeSlotRepository timeSlotRepository, ProAvailabilityService proAvailabilityService) {
+		this.patientRepository = patientRepository;
+		this.practitionerRepository = practitionerRepository;
+		this.timeSlotRepository = timeSlotRepository;
+		this.proAvailabilityService = proAvailabilityService;
+	}
 
-    @Autowired
-    private ProAvailabilityService proAvailabilityService;
-
-    @Override
+	@Override
     public void run(String... args) {
         //initialise data
         for (int i = 1; i <= 5; i++) {

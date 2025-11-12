@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface PractitionerRepository extends CrudRepository<Practitioner, String> {
     List<Practitioner> findAll();
-
+    boolean existsById(Integer practitionerId);
 }
