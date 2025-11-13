@@ -4,6 +4,7 @@ import com.maiia.pro.entity.TimeSlot;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -11,4 +12,5 @@ public interface TimeSlotRepository extends CrudRepository<TimeSlot, String> {
 
 	List<TimeSlot> findByPractitionerId(Integer practitionerId);
 
+	boolean existsByPractitionerIdAndStartDateAndEndDate(Integer practitionerId, LocalDateTime startDate, LocalDateTime endDate);
 }

@@ -13,21 +13,18 @@ import java.util.List;
 public class ProTimeSlotService {
 
 	private final TimeSlotRepository timeSlotRepository;
-	private final ProAvailabilityService availabilityService;
 
-	public ProTimeSlotService(TimeSlotRepository timeSlotRepository, ProAvailabilityService availabilityService) {
+	public ProTimeSlotService(TimeSlotRepository timeSlotRepository) {
 		this.timeSlotRepository = timeSlotRepository;
-		this.availabilityService = availabilityService;
 	}
 
 	public List<TimeSlot> findByPractitionerId(Integer practitionerId) {
 		return timeSlotRepository.findByPractitionerId(practitionerId);
 	}
 
-	@Transactional
 	public TimeSlot save(TimeSlotDto timeSlot) throws BadRequestException {
-		if (!availabilityService.isAvailable(timeSlot.getPractitionerId(), timeSlot.getStartDate(), timeSlot.getEndDate())) {
-			throw new BadRequestException("Time slot overlaps with existing availabilities");
+		if (timeSlotRepository.existsByPractitionerIdAndStartDateAndEndDate(timeSlot.getPractitionerId(), timeSlot.getStartDate(), timeSlot.getEndDate())) {
+			throw new BadRequestException("Time slot already exists for the given practitioner and time range");
 		}
 		return timeSlotRepository.save(TimeSlot.builder()
 		                                       .practitionerId(timeSlot.getPractitionerId())

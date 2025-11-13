@@ -4,6 +4,7 @@ import com.maiia.pro.dto.AvailabilityDto;
 import com.maiia.pro.entity.Appointment;
 import com.maiia.pro.entity.Availability;
 import com.maiia.pro.entity.TimeSlot;
+import com.maiia.pro.exception.BadRequestException;
 import com.maiia.pro.repository.AppointmentRepository;
 import com.maiia.pro.repository.AvailabilityRepository;
 import com.maiia.pro.repository.TimeSlotRepository;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ProAvailabilityService {
@@ -31,14 +31,7 @@ public class ProAvailabilityService {
 	}
 
 	public List<AvailabilityDto> findByPractitionerId(Integer practitionerId) {
-		return availabilityRepository.findByPractitionerId(practitionerId)
-		                             .stream()
-		                             .map(availability -> AvailabilityDto.builder()
-		                                                                 .practitionerId(availability.getPractitionerId())
-		                                                                 .endDate(availability.getEndDate())
-		                                                                 .startDate(availability.getStartDate())
-		                                                                 .build())
-		                             .collect(Collectors.toList());
+		return generateAvailabilities(practitionerId);
 	}
 
 	@Transactional
@@ -64,7 +57,10 @@ public class ProAvailabilityService {
 	}
 
 	@Transactional
-	public Availability save(AvailabilityDto availabilityDto) {
+	public Availability save(AvailabilityDto availabilityDto) throws BadRequestException {
+		if (!isAvailable(availabilityDto.getPractitionerId(), availabilityDto.getStartDate(), availabilityDto.getEndDate())) {
+			throw new BadRequestException("Availability overlaps with existing ones");
+		}
 		Availability availability = Availability.builder()
 		                                        .practitionerId(availabilityDto.getPractitionerId())
 		                                        .startDate(availabilityDto.getStartDate())
@@ -73,7 +69,7 @@ public class ProAvailabilityService {
 		return availabilityRepository.save(availability);
 	}
 
-	public boolean isAvailable(Integer practitionerId, LocalDateTime start, LocalDateTime end) {
+	private boolean isAvailable(Integer practitionerId, LocalDateTime start, LocalDateTime end) {
 		List<Availability> availabilities = availabilityRepository.findByPractitionerId(practitionerId);
 		return availabilities.stream()
 		                    .anyMatch(availability -> !start.isBefore(availability.getStartDate()) && !end.isAfter(availability.getEndDate()));

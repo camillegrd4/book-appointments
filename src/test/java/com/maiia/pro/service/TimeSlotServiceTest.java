@@ -25,15 +25,19 @@ public class TimeSlotServiceTest {
 	private final EntityFactory entityFactory = new EntityFactory();
 
 	@Test
-	void it_should_throw_exception_when_time_slot_overlaps_with_existing_availabilities() {
+	void it_should_throw_exception_when_time_slot_overlaps_with_existing_availabilities() throws BadRequestException {
+		LocalDateTime startDate = LocalDateTime.of(2025, Month.FEBRUARY, 5, 12, 0, 0);
+		LocalDateTime endDate = startDate.plusMinutes(15);
 		TimeSlotDto timeSlotDto = TimeSlotDto.builder().practitionerId(1)
-		                                     .startDate(LocalDateTime.now())
-		                                     .endDate(LocalDateTime.now().plusMinutes(15))
+		                                     .startDate(startDate)
+		                                     .endDate(endDate)
 		                                     .build();
+
+		proTimeSlotService.save(timeSlotDto);
 
 		assertThatThrownBy(() -> proTimeSlotService.save(timeSlotDto))
 				.isInstanceOf(BadRequestException.class)
-				.hasMessageContaining("Time slot overlaps with existing availabilities");
+				.hasMessageContaining("Time slot already exists for the given practitioner and time range");
 	}
 
 	@Test

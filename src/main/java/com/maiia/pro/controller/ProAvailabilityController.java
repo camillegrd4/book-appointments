@@ -2,6 +2,7 @@ package com.maiia.pro.controller;
 
 import com.maiia.pro.dto.AvailabilityDto;
 import com.maiia.pro.entity.Availability;
+import com.maiia.pro.exception.BadRequestException;
 import com.maiia.pro.service.ProAvailabilityService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.MediaType;
@@ -34,7 +35,7 @@ public class ProAvailabilityController {
 
 	@ApiOperation(value = "POST availabilities by practitionerId")
 	@PostMapping
-	public Availability save(@RequestBody AvailabilityDto availabilityDto) {
+	public Availability save(@RequestBody AvailabilityDto availabilityDto) throws BadRequestException {
 		return proAvailabilityService.save(availabilityDto);
 	}
 
