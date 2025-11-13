@@ -1,6 +1,8 @@
 package com.maiia.pro.service;
 
+import com.maiia.pro.dto.AppointmentDto;
 import com.maiia.pro.dto.AppointmentRequestDto;
+import com.maiia.pro.dto.AvailabilityDto;
 import com.maiia.pro.entity.Appointment;
 import com.maiia.pro.entity.Availability;
 import com.maiia.pro.exception.BadRequestException;
@@ -37,17 +39,18 @@ public class ProAppointmentService {
 		return appointmentRepository.findByPractitionerId(practitionerId);
 	}
 
-	public Appointment save(AppointmentRequestDto appointment) throws NotFoundException, BadRequestException {
-		checkEntityExists(appointment);
-		List<Availability> availabilities = availabilityService.generateAvailabilities(appointment.getPractitionerId());
-		checkAvailability(appointment, availabilities);
-		Appointment appointment1 = Appointment.builder()
-		                                      .practitionerId(appointment.getPractitionerId())
-		                                      .patientId(appointment.getPatientId())
-		                                      .startDate(appointment.getStartDate())
-		                                      .endDate(appointment.getEndDate())
+	public Appointment save(AppointmentRequestDto appointmentRequestDto) throws NotFoundException, BadRequestException {
+		checkEntityExists(appointmentRequestDto);
+		List<AvailabilityDto> availabilities = availabilityService.generateAvailabilities(appointmentRequestDto.getPractitionerId());
+		checkAvailability(appointmentRequestDto, availabilities);
+		Appointment appointment = Appointment.builder()
+		                                      .practitionerId(appointmentRequestDto.getPractitionerId())
+		                                      .patientId(appointmentRequestDto.getPatientId())
+		                                      .startDate(appointmentRequestDto.getStartDate())
+		                                      .endDate(appointmentRequestDto.getEndDate())
 		                                      .build();
-		return appointmentRepository.save(appointment1);
+
+		return appointmentRepository.save(appointment);
 	}
 
 	private void checkEntityExists(AppointmentRequestDto appointment) throws NotFoundException {
@@ -59,7 +62,7 @@ public class ProAppointmentService {
 		}
 	}
 
-	private static void checkAvailability(AppointmentRequestDto appointment, List<Availability> availabilities) throws BadRequestException {
+	private static void checkAvailability(AppointmentRequestDto appointment, List<AvailabilityDto> availabilities) throws BadRequestException {
 		boolean isWithinAvailableSlot = availabilities.stream()
 		                                              .anyMatch(availability ->
 				                                                        (appointment.getStartDate().isAfter(availability.getStartDate())

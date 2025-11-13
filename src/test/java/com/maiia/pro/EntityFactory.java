@@ -2,6 +2,7 @@ package com.maiia.pro;
 
 import com.github.javafaker.Faker;
 import com.maiia.pro.entity.Appointment;
+import com.maiia.pro.entity.Availability;
 import com.maiia.pro.entity.Practitioner;
 import com.maiia.pro.entity.TimeSlot;
 
@@ -33,5 +34,13 @@ public class EntityFactory {
                 .startDate(start)
                 .endDate(end)
                 .build();
+    }
+
+    public Availability createAvailability(Integer practitionerId, LocalDateTime start, LocalDateTime end) {
+        return Availability.builder()
+                          .practitionerId(practitionerId)
+                          .startDate(start)
+                          .endDate(end)
+                          .build();
     }
 }

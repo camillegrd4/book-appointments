@@ -1,5 +1,7 @@
 package com.maiia.pro.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,48 +13,39 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-	private static final String TIMESTAMP = "timestamp";
-	private static final String ERROR = "error";
-	private static final String MESSAGE = "message";
+
+	private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<Map<String, Object>> handleIllegalArgs(IllegalArgumentException ex) {
-		Map<String, Object> body = new HashMap<>();
-		body.put(TIMESTAMP, LocalDateTime.now());
-		body.put(ERROR, "IllegalArgumentException");
-		body.put(MESSAGE, ex.getMessage());
-
-		return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+		logger.warn("IllegalArgumentException: {}", ex.getMessage());
+		return new ResponseEntity<>(buildBody("IllegalArgumentException", ex.getMessage()), HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler(NotFoundException.class)
 	public ResponseEntity<Map<String, Object>> handleNotFound(NotFoundException ex) {
-		Map<String, Object> body = new HashMap<>();
-		body.put(TIMESTAMP, LocalDateTime.now());
-		body.put(ERROR, "NotFoundException");
-		body.put(MESSAGE, ex.getMessage());
-
-		return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+		logger.warn("NotFoundException: {}", ex.getMessage());
+		return new ResponseEntity<>(buildBody("NotFoundException", ex.getMessage()), HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(BadRequestException.class)
 	public ResponseEntity<Map<String, Object>> handleNotFound(BadRequestException ex) {
-		Map<String, Object> body = new HashMap<>();
-		body.put(TIMESTAMP, LocalDateTime.now());
-		body.put(ERROR, "BadRequestException");
-		body.put(MESSAGE, ex.getMessage());
-
-		return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+		logger.warn("BadRequestException: {}", ex.getMessage());
+		return new ResponseEntity<>(buildBody("BadRequestException", ex.getMessage()), HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String, Object>> handleAllExceptions(Exception ex) {
-		Map<String, Object> body = new HashMap<>();
-		body.put(TIMESTAMP, LocalDateTime.now());
-		body.put(ERROR, ex.getClass().getSimpleName());
-		body.put(MESSAGE, ex.getMessage());
+		logger.warn("Exception: {}", ex.getMessage());
+		return new ResponseEntity<>(buildBody(ex.getClass().getSimpleName(), ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 
-		return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+	private Map<String, Object> buildBody(String error, String message) {
+		Map<String, Object> body = new HashMap<>();
+		body.put("timestamp", LocalDateTime.now());
+		body.put("error", error);
+		body.put("message", message);
+		return body;
 	}
 
 }

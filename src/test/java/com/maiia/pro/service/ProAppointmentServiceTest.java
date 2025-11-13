@@ -27,12 +27,7 @@ class ProAppointmentServiceTest {
 
 	@Test
 	void it_should_throw_when_patient_does_not_exist() {
-		AppointmentRequestDto appointment = AppointmentRequestDto.builder()
-		                                                         .patientId(99)
-		                                                         .practitionerId(1)
-		                                                         .startDate(LocalDateTime.now())
-		                                                         .endDate(LocalDateTime.now().plusHours(1))
-		                                                         .build();
+		AppointmentRequestDto appointment = getAppointmentRequestDto(99, 1, LocalDateTime.now(), LocalDateTime.now().plusHours(1));
 
 		assertThatThrownBy(() -> proAppointmentService.save(appointment))
 				.isInstanceOf(NotFoundException.class)
@@ -41,12 +36,7 @@ class ProAppointmentServiceTest {
 
 	@Test
 	void it_should_throw_when_practitioner_does_not_exist() {
-		AppointmentRequestDto appointment = AppointmentRequestDto.builder()
-		                                                         .patientId(1)
-		                                                         .practitionerId(1)
-		                                                         .startDate(LocalDateTime.now())
-		                                                         .endDate(LocalDateTime.now().plusHours(1))
-		                                                         .build();
+		AppointmentRequestDto appointment = getAppointmentRequestDto(1, 1, LocalDateTime.now(), LocalDateTime.now().plusHours(1));
 
 		assertThatThrownBy(() -> proAppointmentService.save(appointment))
 				.isInstanceOf(NotFoundException.class)
@@ -55,12 +45,8 @@ class ProAppointmentServiceTest {
 
 	@Test
 	void it_should_throw_when_appointment_is_not_available() {
-		AppointmentRequestDto appointment = AppointmentRequestDto.builder()
-		                                                         .patientId(1)
-		                                                         .practitionerId(13)
-		                                                         .startDate(LocalDateTime.now().minusYears(1))
-		                                                         .endDate(LocalDateTime.now().minusYears(1).plusHours(1))
-		                                                         .build();
+		AppointmentRequestDto appointment = getAppointmentRequestDto(1, 13, LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+
 		assertThatThrownBy(() -> proAppointmentService.save(appointment))
 				.isInstanceOf(BadRequestException.class)
 				.hasMessage("Appointment not available");
@@ -70,19 +56,8 @@ class ProAppointmentServiceTest {
 	void it_should_throw_when_appointment_already_booked() throws NotFoundException, BadRequestException {
 		LocalDateTime startDate = LocalDateTime.of(2020, Month.FEBRUARY, 5, 12, 0, 0);
 		timeSlotRepository.save(entityFactory.createTimeSlot(13, startDate, startDate.plusHours(1)));
-
-		AppointmentRequestDto requestAppointment = AppointmentRequestDto.builder()
-		                                                                .patientId(1)
-		                                                                .practitionerId(13)
-		                                                                .startDate(startDate)
-		                                                                .endDate(startDate.plusMinutes(15))
-		                                                                .build();
-		AppointmentRequestDto requestAppointment2 = AppointmentRequestDto.builder()
-		                                                                 .patientId(6)
-		                                                                 .practitionerId(13)
-		                                                                 .startDate(startDate)
-		                                                                 .endDate(startDate.plusMinutes(15))
-		                                                                 .build();
+		AppointmentRequestDto requestAppointment = getAppointmentRequestDto(1, 13, startDate, startDate.plusMinutes(15));
+		AppointmentRequestDto requestAppointment2 = getAppointmentRequestDto(6, 13, startDate, startDate.plusMinutes(15));
 
 		proAppointmentService.save(requestAppointment);
 
@@ -95,13 +70,7 @@ class ProAppointmentServiceTest {
 	void it_should_save_availability() throws NotFoundException, BadRequestException {
 		LocalDateTime startDate = LocalDateTime.of(2020, Month.FEBRUARY, 5, 11, 0, 0);
 		timeSlotRepository.save(entityFactory.createTimeSlot(13, startDate, startDate.plusHours(1)));
-
-		AppointmentRequestDto requestAppointment = AppointmentRequestDto.builder()
-		                                                                .patientId(1)
-		                                                                .practitionerId(13)
-		                                                                .startDate(startDate)
-		                                                                .endDate(startDate.plusMinutes(15))
-		                                                                .build();
+		AppointmentRequestDto requestAppointment = getAppointmentRequestDto(1, 13, startDate, startDate.plusMinutes(15));
 
 		Appointment appointment = proAppointmentService.save(requestAppointment);
 
@@ -114,4 +83,12 @@ class ProAppointmentServiceTest {
 		});
 	}
 
+	private static AppointmentRequestDto getAppointmentRequestDto(Integer patientId, Integer practitionerId, LocalDateTime startDate, LocalDateTime endDate) {
+		return AppointmentRequestDto.builder()
+		                            .patientId(patientId)
+		                            .practitionerId(practitionerId)
+		                            .startDate(startDate)
+		                            .endDate(endDate)
+		                            .build();
+	}
 }

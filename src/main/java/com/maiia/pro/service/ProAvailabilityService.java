@@ -8,6 +8,7 @@ import com.maiia.pro.repository.AppointmentRepository;
 import com.maiia.pro.repository.AvailabilityRepository;
 import com.maiia.pro.repository.TimeSlotRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,10 +41,11 @@ public class ProAvailabilityService {
 		                             .collect(Collectors.toList());
 	}
 
-	public List<Availability> generateAvailabilities(Integer practitionerId) {
+	@Transactional
+	public List<AvailabilityDto> generateAvailabilities(Integer practitionerId) {
 		List<Appointment> appointments = appointmentRepository.findByPractitionerId(practitionerId);
 		List<TimeSlot> timeSlots = timeSlotRepository.findByPractitionerId(practitionerId);
-		List<Availability> availabilities = new ArrayList<>();
+		List<AvailabilityDto> availabilities = new ArrayList<>();
 
 		for (TimeSlot timeSlot : timeSlots) {
 			LocalDateTime timeSlotStart = timeSlot.getStartDate();
@@ -53,7 +55,7 @@ public class ProAvailabilityService {
 				LocalDateTime end = timeSlotStart.plusMinutes(APPOINTMENT_DURATION);
 
 				if (!isBooked(timeSlotStart, end, appointments)) {
-					availabilities.add(new Availability(practitionerId, timeSlotStart, end));
+					availabilities.add(new AvailabilityDto(practitionerId, timeSlotStart, end));
 				}
 				timeSlotStart = getNextSlotStart(appointments, timeSlotStart, end);
 			}
@@ -61,6 +63,7 @@ public class ProAvailabilityService {
 		return availabilities;
 	}
 
+	@Transactional
 	public Availability save(AvailabilityDto availabilityDto) {
 		Availability availability = Availability.builder()
 		                                        .practitionerId(availabilityDto.getPractitionerId())
@@ -68,6 +71,12 @@ public class ProAvailabilityService {
 		                                        .endDate(availabilityDto.getEndDate())
 		                                        .build();
 		return availabilityRepository.save(availability);
+	}
+
+	public boolean isAvailable(Integer practitionerId, LocalDateTime start, LocalDateTime end) {
+		List<Availability> availabilities = availabilityRepository.findByPractitionerId(practitionerId);
+		return availabilities.stream()
+		                    .anyMatch(availability -> !start.isBefore(availability.getStartDate()) && !end.isAfter(availability.getEndDate()));
 	}
 
 	private static LocalDateTime getNextSlotStart(List<Appointment> appointments, LocalDateTime slotStart, LocalDateTime slotEnd) {

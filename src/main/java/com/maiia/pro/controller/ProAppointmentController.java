@@ -43,15 +43,8 @@ public class ProAppointmentController {
 
 	@ApiOperation(value = "Save appointments")
 	@PostMapping
-	public AppointmentDto save(@RequestBody final AppointmentRequestDto appointment) throws NotFoundException, BadRequestException {
-		Appointment app = proAppointmentService.save(appointment);
-
-		return AppointmentDto.builder()
-		                     .patientId(app.getPatientId())
-		                     .practitionerId(app.getPractitionerId())
-		                     .startDate(app.getStartDate())
-		                     .endDate(app.getEndDate())
-		                     .build();
+	public Appointment save(@RequestBody final AppointmentRequestDto appointment) throws NotFoundException, BadRequestException {
+		return proAppointmentService.save(appointment);
 	}
 
 }
